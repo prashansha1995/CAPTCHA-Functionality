@@ -6,6 +6,17 @@
   <display-name>Archetype Created Web Application</display-name>
   <absolute-ordering />
   <!-- Spring MVC Configs -->
+  
+<context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>/WEB-INF/my-wiki.xml</param-value>
+</context-param>
+
+    <listener>
+    <listener-class>
+        org.springframework.web.context.ContextLoaderListener
+    </listener-class>
+</listener>
 
 	<!-- Step 1: Configure Spring MVC Dispatcher Servlet -->
 	<servlet>
@@ -23,4 +34,5 @@
 		<servlet-name>dispatcher</servlet-name>
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
+
 </web-app>

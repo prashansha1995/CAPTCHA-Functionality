@@ -1,5 +1,9 @@
 package com.demo.controllers;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Random;
@@ -11,16 +15,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
+import org.springframework.web.bind.annotation.SessionAttributes;
+
+import com.demo.entity.User;
 
 @Controller
+@Scope("session")
 @RequestMapping("/captcha")
+@SessionAttributes
 public class CaptchaController {
 	
 	/**
@@ -32,7 +40,7 @@ public class CaptchaController {
 	 * @throws IOException
 	 */
 	@RequestMapping(method = RequestMethod.GET,value="/generateCaptcha")
-	public void index(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void index(HttpServletRequest request, HttpServletResponse response,ModelMap modelMap) throws ServletException, IOException {
 		response.setContentType("image/jpg");
 		Random randChars = new Random();
 		int lengthOfCaptcha= 6;
@@ -55,11 +63,16 @@ public class CaptchaController {
 				g2dImage.drawString(captcha.substring(i, i + 1), 25 * i, 35);
 			}
 		}
+
 		OutputStream osImage = response.getOutputStream();
 		ImageIO.write(biImage, "jpeg", osImage);
+		
+
 		g2dImage.dispose();
-		HttpSession session = request.getSession();
-		session.setAttribute("captcha_security", captcha);
+ 
+		
+		request.getSession().setAttribute("generatedCaptchaValue", captcha);
+		
 	}
     /**
      * This method will return the String of random Generated CAPTCHA of desired length.
@@ -79,6 +92,26 @@ public class CaptchaController {
 		}
 				);
 		return captchaBuffer.toString();
+	}
+	
+	
+	@RequestMapping(method = RequestMethod.GET)
+	public String index(ModelMap modelMap) {
+		modelMap.put("user", new User());
+		return "index";
+	}
+
+	
+	@RequestMapping(method = RequestMethod.POST,value="/save")
+	public String save(@ModelAttribute("user") User user,@ModelAttribute("generatedCaptchaValue")String generatedCaptcha,
+			ModelMap modelMap){
+	
+	 //generatedCaptcha=session.getAttribute("generatedCaptchaValue").toString();
+	System.out.println("###########"+generatedCaptcha);
+	String enteredCaptcha=user.getCaptcha();
+
+	
+	return generatedCaptcha.equals(enteredCaptcha)? "success" : "invalid";
 	}
 
 }
